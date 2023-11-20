@@ -1,4 +1,7 @@
 #!/usr/bin/env python3.8
+
+import json
+
 class Obj(dict):
     def __init__(self, d):
         for a, b in d.items():
@@ -10,3 +13,7 @@ class Obj(dict):
 
 def dict_2_obj(d: dict):
     return Obj(d)
+
+
+def str_2_dict(s: str) -> dict:
+    return json.loads(s)
