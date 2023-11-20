@@ -6,10 +6,14 @@ import requests
 from api import MessageApiClient
 from event import MessageReceiveEvent, UrlVerificationEvent, EventManager
 from flask import Flask, jsonify
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
+from services.handle import get_content_reply
+
 
 # load env parameters form file named .env
-load_dotenv(find_dotenv())
+# load_dotenv(find_dotenv())
+dotenv_path = os.path.join(os.path.dirname(__file__), '../' ,'config', '.env')
+load_dotenv(dotenv_path)
 
 app = Flask(__name__)
 
@@ -42,11 +46,12 @@ def message_receive_event_handler(req_data: MessageReceiveEvent):
         return jsonify()
         # get open_id and text_content
     open_id = sender_id.open_id
-    text_content = message.content
+    msg_type, text_content = get_content_reply(message.content)
+    print("---------------",msg_type, text_content,"-------------")
+    # text_content = message.content
     # echo text message
-    message_api_client.send_text_with_open_id(open_id, text_content)
+    message_api_client.send_text_with_open_id(open_id, text_content, msg_type)
     return jsonify()
-
 
 @app.errorhandler
 def msg_error_handler(ex):

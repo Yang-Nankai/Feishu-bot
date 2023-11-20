@@ -8,6 +8,7 @@ APP_SECRET = os.getenv("APP_SECRET")
 
 # const
 TENANT_ACCESS_TOKEN_URI = "/open-apis/auth/v3/tenant_access_token/internal"
+
 MESSAGE_URI = "/open-apis/im/v1/messages"
 
 
@@ -22,8 +23,8 @@ class MessageApiClient(object):
     def tenant_access_token(self):
         return self._tenant_access_token
 
-    def send_text_with_open_id(self, open_id, content):
-        self.send("open_id", open_id, "text", content)
+    def send_text_with_open_id(self, open_id, content, msg_type):
+        self.send("open_id", open_id, msg_type, content)
 
     def send(self, receive_id_type, receive_id, msg_type, content):
         # send message to user, implemented based on Feishu open api capability. doc link: https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/create
@@ -31,6 +32,7 @@ class MessageApiClient(object):
         url = "{}{}?receive_id_type={}".format(
             self._lark_host, MESSAGE_URI, receive_id_type
         )
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.tenant_access_token,

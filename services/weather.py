@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2023/11/20 22:59
+# @Comment :
+
+import requests
+import json
+from utils import str_2_dict
+
+
+class WeatherDataException(Exception):
+    def __init__(self, error_info):
+        self.error_info = error_info
+
+    def __str__(self) -> str:
+        return "The request not get the weather data: {}".format(self.error_info)
+
+    __repr__ = __str__
+
+
+def weather_to_group_table(forecaset_data: list) -> list:
+    group_data = list()
+    for col_data in forecaset_data:
+        col_json = dict()
+        col_json["date"] = col_data["ymd"]
+        col_json["temperature"] = col_data["high"] + "/" + col_data["low"]
+        col_json["type"] = col_data["type"]
+        group_data.append(col_json)
+
+    return group_data[0:3]
+
+
+def weather_data_handle(weather_data: dict) -> dict:
+    template_variables = dict()
+
+    template_variables["group_table"] = weather_to_group_table(weather_data["data"]["forecast"])
+    template_variables["area"] = weather_data["cityInfo"]["parent"] + weather_data["cityInfo"]["city"]
+    template_variables["update_time"] = weather_data["time"]
+    template_variables["humidity"] = str(weather_data["data"]["shidu"])
+    template_variables["pm25"] = str(weather_data["data"]["pm25"])
+    template_variables["pm10"] = str(weather_data["data"]["pm10"])
+    template_variables["now_temperature"] = str(weather_data["data"]["wendu"])
+    template_variables["air_quality"] = weather_data["data"]["quality"]
+    template_variables["daily_notice"] = weather_data["data"]["ganmao"]
+
+    return  template_variables
+
+
+def weather_data_content_reuqest(weather_data: dict, card_id: str) -> dict:
+    content = dict()
+    content["data"] = dict()
+    content["type"] = "template"
+    content["data"]["template_id"] = card_id
+    content["data"]["template_variable"] = weather_data_handle(weather_data)
+    return content
+
+
+def request_weather_data_from_url(weather_url: str, weather_card_id: str) -> str:
+    res = requests.get(weather_url)
+    if res.status_code != 200:
+        raise WeatherDataException("No Weather Data")
+    print(res.content.decode('utf-8'))
+    weather_data = str_2_dict(res.content)
+    reply_weather_data = weather_data_content_reuqest(weather_data, weather_card_id)
+    return json.dumps(reply_weather_data)
