@@ -4,8 +4,15 @@
 
 import requests
 import json
-from utils import str_2_dict
+import os
+from utils.dict2obj import str_2_dict
+from dotenv import load_dotenv
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
+load_dotenv(dotenv_path)
+
+# load from env
+DEFAULT_CITY_CODE = os.getenv("DEFAULT_CITY_CODE")
 
 class WeatherDataException(Exception):
     def __init__(self, error_info):
@@ -54,8 +61,9 @@ def weather_data_content_reuqest(weather_data: dict, card_id: str) -> dict:
     return content
 
 
-def request_weather_data_from_url(weather_url: str, weather_card_id: str) -> str:
-    res = requests.get(weather_url)
+def request_weather_data_from_url(weather_url: str, weather_card_id: str, city_code: str) -> str:
+    url = '{}{}'.format(weather_url, city_code if city_code is not None else DEFAULT_CITY_CODE)
+    res = requests.get(url)
     if res.status_code != 200:
         raise WeatherDataException("No Weather Data")
     print(res.content.decode('utf-8'))

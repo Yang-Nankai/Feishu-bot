@@ -2,6 +2,7 @@
 
 import json
 
+
 class Obj(dict):
     def __init__(self, d):
         for a, b in d.items():
@@ -17,3 +18,4 @@ def dict_2_obj(d: dict):
 
 def str_2_dict(s: str) -> dict:
     return json.loads(s)
+
