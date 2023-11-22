@@ -14,6 +14,7 @@ load_dotenv(dotenv_path)
 # load from env
 DEFAULT_CITY_CODE = os.getenv("DEFAULT_CITY_CODE")
 
+
 class WeatherDataException(Exception):
     def __init__(self, error_info):
         self.error_info = error_info
@@ -65,7 +66,7 @@ def request_weather_data_from_url(weather_url: str, weather_card_id: str, city_c
     url = '{}{}'.format(weather_url, city_code if city_code is not None else DEFAULT_CITY_CODE)
     res = requests.get(url)
     if res.status_code != 200:
-        raise WeatherDataException("No Weather Data")
+        raise WeatherDataException("No Weather Data.")
     print(res.content.decode('utf-8'))
     weather_data = str_2_dict(res.content)
     reply_weather_data = weather_data_content_reuqest(weather_data, weather_card_id)

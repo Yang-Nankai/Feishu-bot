@@ -69,6 +69,11 @@ def callback_event_handler():
 
     return event_handler(event)
 
+# CVE Info API
+@app.route("/cve_info", methods=["get"])
+def get_daily_cve_info_handler():
+    return "test, this is a test"
+
 
 if __name__ == "__main__":
     # init()
