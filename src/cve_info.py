@@ -42,7 +42,7 @@ def request_cve_info_from_url(cve_url: str, cve_card_id: str) -> str:
     cve_content = []  # save the request cve info
 
     request_url = cve_url + '?lastModStartDate={}&lastModEndDate={}'.format(pub_start_date, pub_end_date)
-    response = requests.get(request_url, verify=False, timeout=20)
+    response = requests.get(request_url, verify=False, timeout=60)
     res = json.loads(response.text)
 
     if res['totalResults'] > 0:

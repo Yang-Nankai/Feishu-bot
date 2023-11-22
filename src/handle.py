@@ -4,10 +4,11 @@
 import json
 import os
 from dotenv import load_dotenv
-from reply import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply
+from reply import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply
 from weather import request_weather_data_from_url
 from utils.city_code import get_city_code_by_region
 from cve_info import request_cve_info_from_url
+from leetcode_daily import request_leetcode_daily_from_url
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
@@ -18,6 +19,8 @@ WEATHER_URL = os.getenv("WEATHER_URL")
 WEATHER_CARD_ID = os.getenv("WEATHER_CARD_ID")
 CVE_CARD_ID = os.getenv("CVE_CARD_ID")
 CVE_URL = os.getenv("CVE_URL")
+LEETCODE_URL = os.getenv("LEETCODE_URL")
+LEETCODE_DAILY_CARD_ID = os.getenv("LEETCODE_DAILY_CARD_ID")
 
 # init service
 reply_manager = ReplyManager()
@@ -45,6 +48,12 @@ def cve_info_display_handler(req_data: CVEInfoDisplayReply):
 def repeat_message_handler(req_data: RepeatMessageReply):
     msg_type = "text"
     return msg_type, str(req_data.message_data)
+
+@reply_manager.register("leetcode_daily_display")
+def leetcode_daily_display_handler(req_data: LeetCodeDailyDisplayReply):
+    msg_type = "interactive"
+    leetcode_daily_data = request_leetcode_daily_from_url(LEETCODE_URL, LEETCODE_DAILY_CARD_ID)
+    return msg_type, leetcode_daily_data
 
 
 def get_message_list(message: str) -> dict:

@@ -29,6 +29,14 @@ class WeatherDisplayReply(Reply):
         return "weather_display"
 
 
+class LeetCodeDailyDisplayReply(Reply):
+
+    # reply the weather card to the client
+    @staticmethod
+    def reply_type():
+        return "leetcode_daily_display"
+
+
 class RepeatMessageReply(Reply):
     # repeat the user's message to the client
 
@@ -45,11 +53,12 @@ class ReplyManager(object):
     reply_instruction_map = {
         "天气": "weather_display",
         "CVE": "cve_info_display",
+        "每日一题": "leetcode_daily_display",
         "其他": "repeat_message"
     }
 
     # Here need to add new reply handler
-    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply]
+    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply]
 
     def __init__(self):
         for reply in ReplyManager._reply_list:
