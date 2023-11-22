@@ -4,9 +4,11 @@
 import json
 import os
 from dotenv import load_dotenv
-from reply import ReplyManager, WeatherDisplayReply, RepeatMessageReply
+from reply import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply
 from weather import request_weather_data_from_url
 from utils.city_code import get_city_code_by_region
+from cve_info import request_cve_info_from_url
+
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
 load_dotenv(dotenv_path)
@@ -14,6 +16,8 @@ load_dotenv(dotenv_path)
 # load from env
 WEATHER_URL = os.getenv("WEATHER_URL")
 WEATHER_CARD_ID = os.getenv("WEATHER_CARD_ID")
+CVE_CARD_ID = os.getenv("CVE_CARD_ID")
+CVE_URL = os.getenv("CVE_URL")
 
 # init service
 reply_manager = ReplyManager()
@@ -28,6 +32,13 @@ def weather_display_handler(req_data: WeatherDisplayReply):
     msg_type = "interactive"
     weather_data = request_weather_data_from_url(WEATHER_URL, WEATHER_CARD_ID, city_code)
     return msg_type, weather_data
+
+
+@reply_manager.register("cve_info_display")
+def cve_info_display_handler(req_data: CVEInfoDisplayReply):
+    msg_type = "interactive"
+    cve_info_data = request_cve_info_from_url(CVE_URL, CVE_CARD_ID)
+    return msg_type, cve_info_data
 
 
 @reply_manager.register("repeat_message")

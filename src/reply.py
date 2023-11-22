@@ -13,6 +13,14 @@ class Reply(object):
         return self.reply_type
 
 
+class CVEInfoDisplayReply(Reply):
+
+    # reply the cve info card to the client
+    @staticmethod
+    def reply_type():
+        return "cve_info_display"
+
+
 class WeatherDisplayReply(Reply):
 
     # reply the weather card to the client
@@ -36,11 +44,12 @@ class ReplyManager(object):
     # the instruction map to the reply_type
     reply_instruction_map = {
         "天气": "weather_display",
+        "CVE": "cve_info_display",
         "其他": "repeat_message"
     }
 
     # Here need to add new reply handler
-    _reply_list = [WeatherDisplayReply, RepeatMessageReply]
+    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply]
 
     def __init__(self):
         for reply in ReplyManager._reply_list:
