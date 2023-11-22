@@ -8,6 +8,7 @@ from event import MessageReceiveEvent, UrlVerificationEvent, EventManager
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
 from handle import get_content_reply
+from data_handle import create_database
 
 
 # load env parameters form file named .env
@@ -27,6 +28,11 @@ LARK_HOST = os.getenv("LARK_HOST")
 # init service
 message_api_client = MessageApiClient(APP_ID, APP_SECRET, LARK_HOST)
 event_manager = EventManager()
+
+
+def load_config():
+    # create database
+    create_database()
 
 
 @event_manager.register("url_verification")
@@ -69,6 +75,7 @@ def callback_event_handler():
 
     return event_handler(event)
 
+
 # CVE Info API
 @app.route("/cve_info", methods=["get"])
 def get_daily_cve_info_handler():
@@ -76,15 +83,15 @@ def get_daily_cve_info_handler():
     '''
     open_id: param, the user id need to send
     '''
-    print(request.args)
     open_id = request.args['open_id']
     message_content = '{"text":"CVE"}'
     msg_type, text_content = get_content_reply(message_content)
-    # print(open_id, msg_type, text_content)
     message_api_client.send_text_with_open_id(open_id, text_content, msg_type)
     return jsonify()
 
 
 if __name__ == "__main__":
+    # create databse, laod config
+    load_config()
     # init()
     app.run(host="0.0.0.0", port=3000, debug=True)

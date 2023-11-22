@@ -6,6 +6,7 @@
 import datetime
 import json
 import requests
+from data_handle import cve_insert_into_sqlite3
 requests.packages.urllib3.disable_warnings()
 
 vul_like = ['weblogic', 'apache']  # 关注的组件，可添加
@@ -68,11 +69,13 @@ def get_the_metrics_data(metrics: dict):
     else:
         return "", ""
 
+
 def get_the_source_data(references: list) -> str:
     if len(references) == 0:
         return ""
     else:
         return references[0]['url']
+
 
 def res_content(res) -> list:
     content = []
@@ -97,5 +100,8 @@ def res_content(res) -> list:
                 content.append(cve_single)
         except Exception:
             raise CVEDataException("Append Exception!")
+
+    # insert cve info to sqlite3
+    cve_insert_into_sqlite3(content)
 
     return content
