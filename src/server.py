@@ -5,7 +5,7 @@ import logging
 import requests
 from api import MessageApiClient
 from event import MessageReceiveEvent, UrlVerificationEvent, EventManager
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from dotenv import load_dotenv
 from handle import get_content_reply
 
@@ -72,7 +72,17 @@ def callback_event_handler():
 # CVE Info API
 @app.route("/cve_info", methods=["get"])
 def get_daily_cve_info_handler():
-    return "test, this is a test"
+    # send messsage to the user
+    '''
+    open_id: param, the user id need to send
+    '''
+    print(request.args)
+    open_id = request.args['open_id']
+    message_content = '{"text":"CVE"}'
+    msg_type, text_content = get_content_reply(message_content)
+    # print(open_id, msg_type, text_content)
+    message_api_client.send_text_with_open_id(open_id, text_content, msg_type)
+    return jsonify()
 
 
 if __name__ == "__main__":
