@@ -4,12 +4,12 @@
 import json
 import os
 from dotenv import load_dotenv
-from reply import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply
+from reply_manager import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply, GPTGetAnswerReply
 from weather import request_weather_data_from_url
 from utils.city_code import get_city_code_by_region
 from cve_info import request_cve_info_from_url
 from leetcode_daily import request_leetcode_daily_from_url
-
+from xinhuo_big_model import xinhuo_get_answer
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
 load_dotenv(dotenv_path)
@@ -21,6 +21,9 @@ CVE_CARD_ID = os.getenv("CVE_CARD_ID")
 CVE_URL = os.getenv("CVE_URL")
 LEETCODE_URL = os.getenv("LEETCODE_URL")
 LEETCODE_DAILY_CARD_ID = os.getenv("LEETCODE_DAILY_CARD_ID")
+APP_ID = os.getenv("APP_ID")
+API_SECRET = os.getenv("API_SECRET")
+API_KEY = os.getenv("API_KEY")
 
 # init service
 reply_manager = ReplyManager()
@@ -49,11 +52,21 @@ def repeat_message_handler(req_data: RepeatMessageReply):
     msg_type = "text"
     return msg_type, str(req_data.message_data)
 
+
 @reply_manager.register("leetcode_daily_display")
 def leetcode_daily_display_handler(req_data: LeetCodeDailyDisplayReply):
     msg_type = "interactive"
     leetcode_daily_data = request_leetcode_daily_from_url(LEETCODE_URL, LEETCODE_DAILY_CARD_ID)
     return msg_type, leetcode_daily_data
+
+
+@reply_manager.register("gpt_get_answer")
+def gpt_get_answer_handler(req_data: GPTGetAnswerReply):
+    msg_type = "text"
+    question = str(json.loads(req_data.message_data).get('text'))[2:]  # delete the "提问 "
+    gpt_answer_data = xinhuo_get_answer(appid=APP_ID, api_key=API_KEY, api_secret=API_SECRET, question=question)
+    print(type(gpt_answer_data))
+    return msg_type, str(gpt_answer_data)
 
 
 def get_message_list(message: str) -> dict:
