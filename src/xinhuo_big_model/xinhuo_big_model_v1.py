@@ -13,7 +13,7 @@ from wsgiref.handlers import format_date_time
 # websocket-client
 import websocket
 
-XH_GPT3_URL="ws://spark-api.xf-yun.com/v3.1/chat"
+XH_GPT3_URL="ws://spark-api.xf-yun.com/v1.1/chat"
 
 # define a global to store the return content
 gpt_once_content = str()
@@ -89,6 +89,7 @@ def on_message(ws, message):
     code = data['header']['code']
     if code != 0:
         print(f'请求错误: {code}, {data}')
+        gpt_once_content = "请求失败，请重试~"
         ws.close()
     else:
         choices = data["payload"]["choices"]
@@ -127,20 +128,25 @@ def gen_params(appid, question):
 
 
 def xinhuo_get_answer(appid, api_key, api_secret, question):
-    global gpt_once_content
-    gpt_once_content = ''
-    wsParam = Ws_Param(appid, api_key, api_secret, XH_GPT3_URL)
-    websocket.enableTrace(False)
-    wsUrl = wsParam.create_url()
-    ws = websocket.WebSocketApp(wsUrl, on_message=on_message, on_error=on_error, on_close=on_close, on_open=on_open)
-    ws.appid = appid
-    ws.question = question
-    ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
-    return gpt_once_content
+    try:
+        global gpt_once_content
+        gpt_once_content = ''
+        wsParam = Ws_Param(appid, api_key, api_secret, XH_GPT3_URL)
+        websocket.enableTrace(False)
+        wsUrl = wsParam.create_url()
+        ws = websocket.WebSocketApp(wsUrl, on_message=on_message, on_error=on_error, on_close=on_close, on_open=on_open)
+        ws.appid = appid
+        ws.question = question
+        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+        return gpt_once_content
+    except Exception as e:
+        print(e)
 
 
 # 测试时候在此处正确填写相关信息即可运行
-# xinhuo_get_answer(appid="9ca92875",
+# content = xinhuo_get_answer(appid="9ca92875",
 #      api_secret="NWFlNGFmOTBmYzRmZDdhNTAyOTQzZmRi",
 #      api_key="0bb11f0c879f2389aef9505288d1bc34",
-#      question="你是谁")
+#      question="星星是什么？")
+#
+# print(content)
