@@ -37,6 +37,14 @@ class LeetCodeDailyDisplayReply(Reply):
         return "leetcode_daily_display"
 
 
+class GPTGetAnswerReply(Reply):
+    # get the answer from xinhuo_gpt
+
+    @staticmethod
+    def reply_type():
+        return "gpt_get_answer"
+
+
 class RepeatMessageReply(Reply):
     # repeat the user's message to the client
 
@@ -54,11 +62,12 @@ class ReplyManager(object):
         "天气": "weather_display",
         "CVE": "cve_info_display",
         "每日一题": "leetcode_daily_display",
+        "提问": "gpt_get_answer",
         "其他": "repeat_message"
     }
 
     # Here need to add new reply handler
-    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply]
+    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply, GPTGetAnswerReply]
 
     def __init__(self):
         for reply in ReplyManager._reply_list:
