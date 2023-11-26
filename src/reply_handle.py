@@ -4,12 +4,13 @@
 import json
 import os
 from dotenv import load_dotenv
-from reply_manager import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply, GPTGetAnswerReply
+from reply_manager import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, \
+                          LeetCodeDailyDisplayReply, GPTGetAnswerReply
 from weather import request_weather_data_from_url
 from utils.city_code import get_city_code_by_region
 from cve_info import request_cve_info_from_url
 from leetcode_daily import request_leetcode_daily_from_url
-from src.xinhuo_big_model.xinhuo_big_model_v1 import xinhuo_get_answer
+from src.xinhuo_big_model.spark_gpt import SparkGPT
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
 load_dotenv(dotenv_path)
@@ -64,9 +65,10 @@ def leetcode_daily_display_handler(req_data: LeetCodeDailyDisplayReply):
 def gpt_get_answer_handler(req_data: GPTGetAnswerReply):
     msg_type = "text"
     question = str(json.loads(req_data.message_data).get('text'))[2:]  # delete the "提问 "
-    gpt_answer_data = xinhuo_get_answer(appid=XH_APP_ID, api_key=XH_API_KEY, api_secret=XH_API_SECRET, question=question)
+    speak = SparkGPT(app_id=XH_APP_ID, api_key=XH_API_KEY, api_secret=XH_API_SECRET, domain="generalv3", spark_url="ws://spark-api.xf-yun.com/v3.1/chat", prompt="回答我的问题")
+    gpt_answer_data = speak.ask(question)
     print(gpt_answer_data)
-    return msg_type, json.dumps({"text": gpt_answer_data})
+    return msg_type, json.dumps({"text": str(gpt_answer_data)})
 
 
 def get_message_list(message: str) -> dict:
