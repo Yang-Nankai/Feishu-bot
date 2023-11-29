@@ -43,7 +43,8 @@ class Event(object):
 
 
 class MessageReceiveEvent(Event):
-    # message receive event defined in https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message/events/receive
+    # message receive event defined in https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/im-v1/message
+    # /events/receive
 
     @staticmethod
     def event_type():

@@ -79,10 +79,9 @@ def callback_event_handler():
 # CVE Info API
 @app.route("/cve_info", methods=["get"])
 def get_daily_cve_info_handler():
-    # send messsage to the user
-    '''
+    """
     open_id: param, the user id need to send
-    '''
+    """
     open_id = request.args['open_id']
     message_content = '{"text":"CVE"}'
     msg_type, text_content = get_content_reply(message_content)
@@ -91,7 +90,7 @@ def get_daily_cve_info_handler():
 
 
 if __name__ == "__main__":
-    # create databse, laod config
+    # create database, load config
     load_config()
     # init()
     app.run(host="0.0.0.0", port=3000, debug=True)

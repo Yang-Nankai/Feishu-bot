@@ -24,7 +24,7 @@ def get_title_request(leetcode_url: str) -> str:
         json_data = {
             "operationName": "questionOfToday",
             "variables": {},
-            "query": "query questionOfToday { todayRecord {   question {     questionFrontendId     questionTitleSlug     "
+            "query": "query questionOfToday { todayRecord {   question {     questionFrontendId     questionTitleSlug"
                      "__typename   }   lastSubmission {     id     __typename   }   date   userStatus   __typename }}"
         }
         res = requests.post(leetcode_url + "/graphql", json=json_data)

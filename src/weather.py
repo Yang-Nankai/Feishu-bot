@@ -16,9 +16,9 @@ load_dotenv(dotenv_path)
 DEFAULT_CITY_CODE = os.getenv("DEFAULT_CITY_CODE")
 
 
-def weather_to_group_table(forecaset_data: list) -> list:
+def weather_to_group_table(forecast_data: list) -> list:
     group_data = list()
-    for col_data in forecaset_data:
+    for col_data in forecast_data:
         col_json = dict()
         col_json["date"] = col_data["ymd"]
         col_json["temperature"] = col_data["high"] + "/" + col_data["low"]
@@ -44,7 +44,7 @@ def weather_data_handle(weather_data: dict) -> dict:
     return  template_variables
 
 
-def weather_data_content_reuqest(weather_data: dict, card_id: str) -> dict:
+def weather_data_content_request(weather_data: dict, card_id: str) -> dict:
     content = dict()
     content["data"] = dict()
     content["type"] = "template"
@@ -60,5 +60,5 @@ def request_weather_data_from_url(weather_url: str, weather_card_id: str, city_c
         raise WeatherDataException("No Weather Data.")
     print(res.content.decode('utf-8'))
     weather_data = str_2_dict(res.content)
-    reply_weather_data = weather_data_content_reuqest(weather_data, weather_card_id)
+    reply_weather_data = weather_data_content_request(weather_data, weather_card_id)
     return json.dumps(reply_weather_data)

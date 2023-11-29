@@ -48,7 +48,8 @@ class MessageApiClient(object):
         MessageApiClient._check_error_response(resp)
 
     def _authorize_tenant_access_token(self):
-        # get tenant_access_token and set, implemented based on Feishu open api capability. doc link: https://open.feishu.cn/document/ukTMukTMukTM/ukDNz4SO0MjL5QzM/auth-v3/auth/tenant_access_token_internal
+        # get tenant_access_token and set, implemented based on Feishu open api capability. doc link:
+        # https://open.feishu.cn/document/ukTMukTMukTM/ukDNz4SO0MjL5QzM/auth-v3/auth/tenant_access_token_internal
         url = "{}{}".format(self._lark_host, TENANT_ACCESS_TOKEN_URI)
         req_body = {"app_id": self._app_id, "app_secret": self._app_secret}
         response = requests.post(url, req_body)
