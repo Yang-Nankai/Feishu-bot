@@ -5,19 +5,10 @@
 # -*- coding: utf-8 -*-
 # @Comment :
 
-from datetime import datetime
 import requests
 import json
-
-
-class LeetCodeDailyException(Exception):
-    def __init__(self, error_info):
-        self.error_info = error_info
-
-    def __str__(self) -> str:
-        return "Leetcode_daily: {}".format(self.error_info)
-
-    __repr__ = __str__
+from datetime import datetime
+from Exceptions import LeetCodeDailyException
 
 
 def get_daily_title_from_json(data: str) -> str:

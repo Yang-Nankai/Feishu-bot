@@ -7,22 +7,13 @@ import json
 import os
 from utils.dict2obj import str_2_dict
 from dotenv import load_dotenv
+from Exceptions import WeatherDataException
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
 load_dotenv(dotenv_path)
 
 # load from env
 DEFAULT_CITY_CODE = os.getenv("DEFAULT_CITY_CODE")
-
-
-class WeatherDataException(Exception):
-    def __init__(self, error_info):
-        self.error_info = error_info
-
-    def __str__(self) -> str:
-        return "The request not get the weather data: {}".format(self.error_info)
-
-    __repr__ = __str__
 
 
 def weather_to_group_table(forecaset_data: list) -> list:

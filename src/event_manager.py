@@ -7,6 +7,7 @@ import typing as t
 from utils.dict2obj import dict_2_obj
 from flask import request
 from utils.decrypt import AESCipher
+from Exceptions import InvalidEventException
 
 
 class Event(object):
@@ -118,11 +119,4 @@ class EventManager(object):
         return json.loads(cipher.decrypt_string(encrypt_data))
 
 
-class InvalidEventException(Exception):
-    def __init__(self, error_info):
-        self.error_info = error_info
 
-    def __str__(self) -> str:
-        return "Invalid event: {}".format(self.error_info)
-
-    __repr__ = __str__

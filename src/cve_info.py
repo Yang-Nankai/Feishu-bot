@@ -6,6 +6,7 @@
 import datetime
 import json
 import requests
+from Exceptions import CVEDataException
 from data_handle import cve_insert_into_sqlite3
 requests.packages.urllib3.disable_warnings()
 
@@ -14,14 +15,7 @@ risk_like = ['CRITICAL']  # 关注的威胁级别，可添加
 care = 1  # 0表示只接收关注组件的漏洞，1表示所有组件的高危漏洞
 
 
-class CVEDataException(Exception):
-    def __init__(self, error_info):
-        self.error_info = error_info
 
-    def __str__(self) -> str:
-        return "The request not get the weather data: {}".format(self.error_info)
-
-    __repr__ = __str__
 
 
 def cve_info_content_request(cve_content: dict, card_id: str) -> dict:

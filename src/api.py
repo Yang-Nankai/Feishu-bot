@@ -2,6 +2,7 @@
 import os
 import logging
 import requests
+from Exceptions import LarkException
 
 APP_ID = os.getenv("APP_ID")
 APP_SECRET = os.getenv("APP_SECRET")
@@ -64,14 +65,3 @@ class MessageApiClient(object):
         if code != 0:
             logging.error(response_dict)
             raise LarkException(code=code, msg=response_dict.get("msg"))
-
-
-class LarkException(Exception):
-    def __init__(self, code=0, msg=None):
-        self.code = code
-        self.msg = msg
-
-    def __str__(self) -> str:
-        return "{}:{}".format(self.code, self.msg)
-
-    __repr__ = __str__
