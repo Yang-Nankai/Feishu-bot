@@ -63,6 +63,8 @@ class ReplyManager(object):
         "CVE": "cve_info_display",
         "每日一题": "leetcode_daily_display",
         "提问": "gpt_get_answer",
+        # TODO: set_daily_tasks
+        "任务": "set_daily_tasks",
         "其他": "repeat_message"
     }
 

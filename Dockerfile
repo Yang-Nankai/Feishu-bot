@@ -7,6 +7,6 @@ ADD requirements.txt /home/app
 RUN pip install --no-cache-dir -r requirements.txt
 
 ADD . /home/app
-CMD python services/server.py
+CMD python src/server.py
 
 EXPOSE 3000
