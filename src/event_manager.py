@@ -7,7 +7,7 @@ import typing as t
 from utils.dict2obj import dict_2_obj
 from flask import request
 from utils.decrypt import AESCipher
-from Exceptions import InvalidEventException
+from src.utils.Exceptions import InvalidEventException
 
 
 class Event(object):

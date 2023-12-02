@@ -6,10 +6,10 @@ import os
 from dotenv import load_dotenv
 from reply_manager import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, \
                           LeetCodeDailyDisplayReply, GPTGetAnswerReply
-from weather import request_weather_data_from_url
+from src.utils.weather import request_weather_data_from_url
 from utils.city_code import get_city_code_by_region
-from cve_info import request_cve_info_from_url
-from leetcode_daily import request_leetcode_daily_from_url
+from src.utils.cve_info import request_cve_info_from_url
+from src.utils.leetcode_daily import request_leetcode_daily_from_url
 from src.utils.spark_gpt import SparkGPT
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
@@ -67,7 +67,7 @@ def gpt_get_answer_handler(req_data: GPTGetAnswerReply):
     question = str(json.loads(req_data.message_data).get('text'))[2:]  # delete the "提问 "
     speak = SparkGPT(app_id=XH_APP_ID, api_key=XH_API_KEY, api_secret=XH_API_SECRET, domain="generalv3", spark_url="ws://spark-api.xf-yun.com/v3.1/chat", prompt="回答我的问题")
     gpt_answer_data = speak.ask(question)
-    print(gpt_answer_data)
+    print(gpt_answer_data)  # to debug
     return msg_type, json.dumps({"text": str(gpt_answer_data)})
 
 

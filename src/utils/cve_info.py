@@ -7,15 +7,13 @@ import datetime
 import json
 import requests
 from Exceptions import CVEDataException
-from data_handle import cve_insert_into_sqlite3
+from src.data_handle import cve_insert_into_sqlite3
+
 requests.packages.urllib3.disable_warnings()
 
 vul_like = ['weblogic', 'apache']  # 关注的组件，可添加
 risk_like = ['CRITICAL']  # 关注的威胁级别，可添加
 care = 1  # 0表示只接收关注组件的漏洞，1表示所有组件的高危漏洞
-
-
-
 
 
 def cve_info_content_request(cve_content: dict, card_id: str) -> dict:
@@ -57,7 +55,8 @@ def request_cve_info_from_url(cve_url: str, cve_card_id: str) -> str:
 
 def get_the_metrics_data(metrics: dict):
     if 'cvssMetricV31' in metrics:
-        return str(metrics['cvssMetricV31'][0]['cvssData']['baseSeverity']), str(metrics['cvssMetricV31'][0]['cvssData']['baseScore'])
+        return str(metrics['cvssMetricV31'][0]['cvssData']['baseSeverity']), str(
+            metrics['cvssMetricV31'][0]['cvssData']['baseScore'])
     elif 'cvssMetricV2' in metrics:
         return str(metrics['cvssMetricV2'][0]['baseSeverity']), str(metrics['cvssMetricV2'][0]['cvssData']['baseScore'])
     else:

@@ -5,11 +5,10 @@
 import requests
 import json
 import os
-from utils.dict2obj import str_2_dict
 from dotenv import load_dotenv
 from Exceptions import WeatherDataException
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
+dotenv_path = os.path.join(os.path.dirname(__file__), '../../', 'config', '.env')
 load_dotenv(dotenv_path)
 
 # load from env
@@ -59,6 +58,6 @@ def request_weather_data_from_url(weather_url: str, weather_card_id: str, city_c
     if res.status_code != 200:
         raise WeatherDataException("No Weather Data.")
     print(res.content.decode('utf-8'))
-    weather_data = str_2_dict(res.content)
+    weather_data = json.loads(res.content)
     reply_weather_data = weather_data_content_request(weather_data, weather_card_id)
     return json.dumps(reply_weather_data)

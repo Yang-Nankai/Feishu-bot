@@ -65,6 +65,7 @@ class ReplyManager(object):
         "提问": "gpt_get_answer",
         # TODO: set_daily_tasks
         "任务": "set_daily_tasks",
+        "B站进度": "get_bilibili_progress",
         "其他": "repeat_message"
     }
 

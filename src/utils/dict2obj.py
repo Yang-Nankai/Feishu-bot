@@ -16,6 +16,3 @@ def dict_2_obj(d: dict):
     return Obj(d)
 
 
-def str_2_dict(s: str) -> dict:
-    return json.loads(s)
-

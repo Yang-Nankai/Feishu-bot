@@ -2,7 +2,7 @@
 import os
 import logging
 import requests
-from Exceptions import LarkException
+from src.utils.Exceptions import LarkException
 
 APP_ID = os.getenv("APP_ID")
 APP_SECRET = os.getenv("APP_SECRET")

@@ -20,3 +20,6 @@ env.bak/
 venv.bak/
 /config/.env
 
+# Test file
+test/
+

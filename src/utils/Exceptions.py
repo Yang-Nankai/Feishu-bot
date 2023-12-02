@@ -56,3 +56,12 @@ class WeatherDataException(BaseException):
 
     def __str__(self) -> str:
         return "{}: {}".format(self.exception_name, super().__str__())
+
+
+class BilibiliApiException(BaseException):
+    def __init__(self, error_info):
+        super().__init__(error_info)
+        self.exception_name = "BilibiliApiException"
+
+    def __str__(self) -> str:
+        return "{}: {}".format(self.exception_name, super().__str__())
