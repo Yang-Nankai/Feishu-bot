@@ -11,8 +11,9 @@ import requests
 from src.utils.Exceptions import BilibiliApiException
 
 FAVORITE_LIST_DETAIL_URL = "/x/v3/fav/resource/list"
+FAVORITE_CLEAN_URL = "/x/v3/fav/resource/clean"
 
-headers = {
+HEADER = {
     "Referer": "https://www.bilibili.com/",
     "Origin": "https://space.bilibili.com",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 "
@@ -49,13 +50,22 @@ class BilibiliApiClient:
         return {"SESSDATA": self.session_data, "bili_jct": self.bilibili_jct}
 
     def all_favorite_info(self, media_id: str) -> dict:
-        all_res_dict = []
+        all_res_list = self.all_favorite_list_detail(media_id)
+        return self.all_favorite_res_to_info(all_res_list)
+
+    def all_favorite_list_detail(self, media_id: str) -> list:
+        """
+        get all videos detail of a favorite
+        :param media_id: the favorite id
+        :return: all videos detail of the favorite
+        """
+        all_res_dict = list()
         for index in itertools.count(1):
             res_dict = self._favorite_list_detail(media_id, index)
             if not res_dict["data"]["has_more"]:
                 break
             all_res_dict.append(res_dict)
-        return self.all_favorite_res_to_info(all_res_dict)
+        return all_res_dict
 
     def all_favorite_res_to_info(self, all_res: list) -> dict:
         all_favorite_info = copy.deepcopy(FAVORITE_INFO_TEMPLATE)
@@ -83,7 +93,7 @@ class BilibiliApiClient:
         favorite_detail = "{}{}?media_id={}&pn={}&ps={}&order=mtime&platform=web".format(
             self.bilibili_api_url, FAVORITE_LIST_DETAIL_URL, media_id, pn, ps
         )
-        response = requests.get(favorite_detail, headers=headers, cookies=self.get_cookies)
+        response = requests.get(favorite_detail, headers=HEADER, cookies=self.get_cookies)
         res_dict = json.loads(response.text) if response.text else {}
         return res_dict
 
@@ -121,19 +131,21 @@ class BilibiliApiClient:
 
         :return: the completed progress of the video
         """
-        bvid_url = f"{self.bilibili_url}video/{bvid}"
+        bvid_url = f"{self.bilibili_url}/video/{bvid}"
 
-        resp = requests.get(bvid_url, headers=headers, cookies=self.get_cookies)
+        resp = requests.get(bvid_url, headers=HEADER, cookies=self.get_cookies)
 
         try:
+
             play_info = re.findall(r'<script>window.__playinfo__=(.*?)</script>', resp.text)[0]
             play_json = json.loads(play_info)
             last_play_time = play_json["data"]["last_play_time"]
             completed_progress = "{:.3}".format(last_play_time / 1000 / duration * 100)  # 保留三位有效数字
+
         except Exception as e:
             completed_progress = 0
             # 存在已经失效的视频
-            print("存在已失效的视频")
+            print("Exists expired video")
 
         return completed_progress
 
@@ -151,5 +163,25 @@ class BilibiliApiClient:
 
         return time_str
 
-    # 去清除所有已经失效的视频
-    def remove_all_
+    def remove_expired_videos(self, media_id: str) -> bool:
+        """
+        Remove all expired videos from this function
+        :param media_id: the favorite id
+        :return: bool, True if remove successfully and False if unsuccessfully
+        """
+        clean_url = f"{self.bilibili_api_url}{FAVORITE_CLEAN_URL}"
+        params = {"media_id": media_id, "csrf": self.bilibili_jct}
+
+        try:
+            resp = requests.post(clean_url, params=params, cookies=self.get_cookies, headers=HEADER)
+            resp_info = resp.json()
+
+            if resp_info["code"] == 0:
+                return True
+            else:
+                raise BilibiliApiException("Clean Not Success!")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        return False
