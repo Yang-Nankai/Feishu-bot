@@ -8,7 +8,7 @@
 import requests
 import json
 from datetime import datetime
-from Exceptions import LeetCodeDailyException
+from src.utils.Exceptions import LeetCodeDailyException
 
 
 def get_daily_title_from_json(data: str) -> str:

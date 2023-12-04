@@ -6,7 +6,7 @@
 import datetime
 import json
 import requests
-from Exceptions import CVEDataException
+from src.utils.Exceptions import CVEDataException
 from src.data_handle import cve_insert_into_sqlite3
 
 requests.packages.urllib3.disable_warnings()

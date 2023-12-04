@@ -1,7 +1,10 @@
 #! /usr/bin/env python3.8
+import json
 import os
 import logging
 import requests
+from io import BytesIO
+from requests_toolbelt import MultipartEncoder
 from src.utils.Exceptions import LarkException
 
 APP_ID = os.getenv("APP_ID")
@@ -10,6 +13,7 @@ APP_SECRET = os.getenv("APP_SECRET")
 # const
 TENANT_ACCESS_TOKEN_URI = "/open-apis/auth/v3/tenant_access_token/internal"
 MESSAGE_URI = "/open-apis/im/v1/messages"
+UPLOAD_IMAGE_URL = "/open-apis/im/v1/images"
 
 
 class MessageApiClient(object):
@@ -22,6 +26,51 @@ class MessageApiClient(object):
     @property
     def tenant_access_token(self):
         return self._tenant_access_token
+
+    def upload_image_from_url(self, img_url: str) -> str:
+        """
+        upload image use url and has a default img_key if not success
+        :param img_url: the image url which want to upload
+        :return: img_key
+        """
+        # Update the authorized tenant access token
+        self._authorize_tenant_access_token()
+
+        # default image key
+        default_img_key = "img_v2_a4b2d72a-211b-440b-8950-880066cfbabg"
+
+        url = "{}{}".format(
+            self._lark_host, UPLOAD_IMAGE_URL
+        )
+
+        # Download image from url
+        image_response = requests.get(img_url)
+        if image_response.status_code == 200:
+            image_content = BytesIO(image_response.content)
+
+            # build form dictionary
+            form = {'image_type': 'message', 'image': ('image.jpg', image_content, 'image/jpeg')}
+
+            # create MultipartEncoder
+            multi_form = MultipartEncoder(form)
+
+            # set headers
+            headers = {
+                'Authorization': 'Bearer ' + self.tenant_access_token,
+                'Content-Type': multi_form.content_type
+            }
+
+            response = requests.request("POST", url, headers=headers, data=multi_form)
+
+            print(response.headers['X-Tt-Logid'])  # for debug or oncall
+            # print(response.content)  # Print Response
+            resp_json = json.loads(response.content)
+
+            # If code is 0 represents success
+            if resp_json["code"] == 0:
+                return resp_json["data"]["image_key"]
+
+        return default_img_key
 
     def send_text_with_open_id(self, open_id, content, msg_type):
         self.send("open_id", open_id, msg_type, content)

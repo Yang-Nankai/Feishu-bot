@@ -6,7 +6,7 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
-from Exceptions import WeatherDataException
+from src.utils.Exceptions import WeatherDataException
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../../', 'config', '.env')
 load_dotenv(dotenv_path)

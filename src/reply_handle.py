@@ -5,12 +5,13 @@ import json
 import os
 from dotenv import load_dotenv
 from reply_manager import ReplyManager, WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, \
-                          LeetCodeDailyDisplayReply, GPTGetAnswerReply
+                          LeetCodeDailyDisplayReply, GPTGetAnswerReply, GetBilibiliProgressReply
 from src.utils.weather import request_weather_data_from_url
 from utils.city_code import get_city_code_by_region
 from src.utils.cve_info import request_cve_info_from_url
 from src.utils.leetcode_daily import request_leetcode_daily_from_url
 from src.utils.spark_gpt import SparkGPT
+from src.utils.bilibili_api import request_bilibili_progress_data
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
 load_dotenv(dotenv_path)
@@ -25,6 +26,7 @@ LEETCODE_DAILY_CARD_ID = os.getenv("LEETCODE_DAILY_CARD_ID")
 XH_APP_ID = os.getenv("XH_APP_ID")
 XH_API_SECRET = os.getenv("XH_API_SECRET")
 XH_API_KEY = os.getenv("XH_API_KEY")
+PROGRESS_CARD_ID = os.getenv("PROGRESS_CARD_ID")
 
 # init service
 reply_manager = ReplyManager()
@@ -69,6 +71,13 @@ def gpt_get_answer_handler(req_data: GPTGetAnswerReply):
     gpt_answer_data = speak.ask(question)
     print(gpt_answer_data)  # to debug
     return msg_type, json.dumps({"text": str(gpt_answer_data)})
+
+
+@reply_manager.register("get_bilibili_progress")
+def get_bilibili_progress_handler(req_data: GetBilibiliProgressReply):
+    msg_type = "interactive"
+    progress_data = request_bilibili_progress_data(PROGRESS_CARD_ID)
+    return msg_type, progress_data
 
 
 def get_message_list(message: str) -> dict:

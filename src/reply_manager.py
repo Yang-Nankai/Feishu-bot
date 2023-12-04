@@ -45,6 +45,14 @@ class GPTGetAnswerReply(Reply):
         return "gpt_get_answer"
 
 
+class GetBilibiliProgressReply(Reply):
+    # get the bilibili favorite videos progress and notice user
+
+    @staticmethod
+    def reply_type():
+        return "get_bilibili_progress"
+
+
 class RepeatMessageReply(Reply):
     # repeat the user's message to the client
 
@@ -70,7 +78,8 @@ class ReplyManager(object):
     }
 
     # Here need to add new reply handler
-    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply, GPTGetAnswerReply]
+    _reply_list = [WeatherDisplayReply, RepeatMessageReply, CVEInfoDisplayReply, LeetCodeDailyDisplayReply,
+                   GPTGetAnswerReply, GetBilibiliProgressReply]
 
     def __init__(self):
         for reply in ReplyManager._reply_list:

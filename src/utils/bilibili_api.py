@@ -5,13 +5,36 @@
 import copy
 import itertools
 import json
+import os
 import re
 import requests
-
+from dotenv import load_dotenv
+from src.api import MessageApiClient
 from src.utils.Exceptions import BilibiliApiException
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '../', 'config', '.env')
+load_dotenv(dotenv_path)
+
+# global variables
+BILIBILI_URL = "https://www.bilibili.com"
+BILIBILI_API_URL = "https://api.bilibili.com"
 FAVORITE_LIST_DETAIL_URL = "/x/v3/fav/resource/list"
 FAVORITE_CLEAN_URL = "/x/v3/fav/resource/clean"
+MOVE_VIDEO_URL = "/x/v3/fav/resource/move"
+FINISHED_PERCENT = 95  # 设置视频看完的阈值
+
+# load from env
+SESSDATA = os.getenv("SESSDATA")
+BILIBILI_JCT = os.getenv("BILIBILI_JCT")
+FAVORITE_ID = os.getenv("FAVORITE_ID")
+FINISHED_FAVORITE_ID = os.getenv("FINISHED_FAVORITE_ID")
+USER_ID = os.getenv("USER_ID")
+APP_ID = os.getenv("APP_ID")
+APP_SECRET = os.getenv("APP_SECRET")
+LARK_HOST = os.getenv("LARK_HOST")
+
+# init service
+message_api_client = MessageApiClient(APP_ID, APP_SECRET, LARK_HOST)
 
 HEADER = {
     "Referer": "https://www.bilibili.com/",
@@ -38,10 +61,30 @@ MEDIA_INFO_TEMPLATE = {
 }
 
 
+def request_bilibili_progress_data(card_id: str) -> str:
+
+    bilibili_api_client = BilibiliApiClient(SESSDATA, BILIBILI_JCT)
+
+    # 首先得清除一下失效的视频
+    is_cleaned = bilibili_api_client.remove_expired_videos(FAVORITE_ID)
+    if is_cleaned:
+        print("Clean Successfully!")
+
+    # 然后得到发送消息需要的Info
+    progress_info = bilibili_api_client.all_favorite_info(FAVORITE_ID)
+
+    # 然后组装发送的content
+    content = dict()
+    content["data"] = dict()
+    content["type"] = "template"
+    content["data"]["template_id"] = card_id
+    content["data"]["template_variable"] = progress_info
+
+    return json.dumps(content)
+
+
 class BilibiliApiClient:
-    def __init__(self, bilibili_url, bilibili_api_url, session_data, bilibili_jct):
-        self.bilibili_url = bilibili_url
-        self.bilibili_api_url = bilibili_api_url
+    def __init__(self, session_data, bilibili_jct):
         self.session_data = session_data
         self.bilibili_jct = bilibili_jct
 
@@ -62,9 +105,9 @@ class BilibiliApiClient:
         all_res_dict = list()
         for index in itertools.count(1):
             res_dict = self._favorite_list_detail(media_id, index)
+            all_res_dict.append(res_dict)
             if not res_dict["data"]["has_more"]:
                 break
-            all_res_dict.append(res_dict)
         return all_res_dict
 
     def all_favorite_res_to_info(self, all_res: list) -> dict:
@@ -91,7 +134,7 @@ class BilibiliApiClient:
         :return: the favorite list 'all' information
         """
         favorite_detail = "{}{}?media_id={}&pn={}&ps={}&order=mtime&platform=web".format(
-            self.bilibili_api_url, FAVORITE_LIST_DETAIL_URL, media_id, pn, ps
+            BILIBILI_API_URL, FAVORITE_LIST_DETAIL_URL, media_id, pn, ps
         )
         response = requests.get(favorite_detail, headers=HEADER, cookies=self.get_cookies)
         res_dict = json.loads(response.text) if response.text else {}
@@ -117,21 +160,21 @@ class BilibiliApiClient:
                 media_info["video_author"] = media_item["upper"]["name"]
                 media_info["video_detail"] = media_item["intro"]
                 media_info["video_time"] = self.format_duration(media_item["duration"])
-                media_info["video_image"] = media_item["cover"]
+                media_info["video_image"] = message_api_client.upload_image_from_url(media_item["cover"])
                 media_info["video_sets"] = media_item["page"]
-                media_info["completed_progress"] = self.get_video_completed_progress(media_item["bvid"],
+                media_info["completed_progress"] = self.get_video_completed_progress(media_item["id"], media_item["bvid"],
                                                                                      media_item["duration"])
                 favorite_info["group_table"].append(media_info)
         return favorite_info
 
-    def get_video_completed_progress(self, bvid: str, duration: int) -> str:
+    def get_video_completed_progress(self, bid: str, bvid: str, duration: int) -> str:
         """
         :param bvid: the bvid of a video
         :param duration: the total time of a video
 
         :return: the completed progress of the video
         """
-        bvid_url = f"{self.bilibili_url}/video/{bvid}"
+        bvid_url = f"{BILIBILI_URL}/video/{bvid}"
 
         resp = requests.get(bvid_url, headers=HEADER, cookies=self.get_cookies)
 
@@ -140,14 +183,21 @@ class BilibiliApiClient:
             play_info = re.findall(r'<script>window.__playinfo__=(.*?)</script>', resp.text)[0]
             play_json = json.loads(play_info)
             last_play_time = play_json["data"]["last_play_time"]
-            completed_progress = "{:.3}".format(last_play_time / 1000 / duration * 100)  # 保留三位有效数字
+
+            completed_progress = last_play_time / 1000 / duration * 100
+            str_completed_progress = "{:.3}".format(completed_progress)  # 保留三位有效数字
+
+            print("progress:", completed_progress)
+            # 如果视频看完了，则移动视频到 已完成 收藏夹
+            if completed_progress > FINISHED_PERCENT:  # 这里设置阈值大于95则代表看得差不多了
+                self.move_video_favorite(FAVORITE_ID, FINISHED_FAVORITE_ID, USER_ID, [bid])
 
         except Exception as e:
             completed_progress = 0
             # 存在已经失效的视频
             print("Exists expired video")
 
-        return completed_progress
+        return str_completed_progress
 
     @staticmethod
     def format_duration(duration: int) -> str:
@@ -169,7 +219,7 @@ class BilibiliApiClient:
         :param media_id: the favorite id
         :return: bool, True if remove successfully and False if unsuccessfully
         """
-        clean_url = f"{self.bilibili_api_url}{FAVORITE_CLEAN_URL}"
+        clean_url = f"{BILIBILI_API_URL}{FAVORITE_CLEAN_URL}"
         params = {"media_id": media_id, "csrf": self.bilibili_jct}
 
         try:
@@ -185,3 +235,36 @@ class BilibiliApiClient:
             print(f"An error occurred: {e}")
 
         return False
+
+    def move_video_favorite(self, src_media_id: str, tar_media_id: str, mid: str, video_ids: list) -> bool:
+        """
+        Move a video from one favorite to another favorite
+        :param src_media_id: source favorite id
+        :param tar_media_id: target favorite id
+        :param mid: user id
+        :param video_ids: video ids like: ["123456", "234567"]
+        :return: True or False
+        """
+        move_url = f"{BILIBILI_API_URL}{MOVE_VIDEO_URL}"
+        # 这里类型均设置为了2，考虑到没有音频类型，均为视频类型(1是音频，2是视频，21是视频合集)
+        resources = ', '.join([f'{id}:2' for id in video_ids])
+        params = {"src_media_id": src_media_id, "tar_media_id": tar_media_id, "mid": mid, "resources": resources, "csrf": self.bilibili_jct}
+
+        try:
+            resp = requests.post(move_url, params=params, cookies=self.get_cookies, headers=HEADER)
+            resp_info = resp.json()
+
+            if resp_info["code"] == 0:
+                print(f"Finished the {resources} videos!")
+                return True
+            else:
+                raise BilibiliApiException("Move Not Success!")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        return False
+
+
+
+
